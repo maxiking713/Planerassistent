@@ -1,0 +1,1371 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Planerassistent</title>
+  manifest.json
+<meta name="theme-color" content="#2563eb">
+<link rel="apple-touch-icon" href="icon-192' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
+  <style>
+    :root{--bg:#f7f8fc;--fg:#111827;--mut:#64748b;--acc:#2563eb;--ok:#16a34a;--card:#fff;--bd:#e5e7eb}
+    html,body{margin:0;padding:0;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--fg);background:#f7f8fc}
+    header{padding:16px 20px;background:var(--card);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between}
+    main{padding:20px;max-width:1000px;margin:auto}
+    .card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;box-shadow:0 1px 0 rgba(0,0,0,.03)}
+    .card h2{margin:4px 0 12px;font-size:18px}
+    .stack{display:flex;flex-direction:column;gap:10px}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    label{font-size:13px;color:var(--mut)}
+    input[type="text"],input[type="number"],input[type="date"],select{border:1px solid #d1d5db;border-radius:8px;padding:8px 10px;font-size:14px;background:#fff;color:#111827}
+    input[type="checkbox"],input[type="radio"]{transform:translateY(1px)}
+    button{appearance:none;border:1px solid #c7d2fe;background:#eef2ff;color:#1e40af;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:600}
+    button.primary{background:var(--acc);color:#fff;border-color:var(--acc)}
+    button.success{background:var(--ok);color:#fff;border-color:var(--ok)}
+    button.ghost{background:#fff;border-color:var(--bd);color:#374151}
+    button.warn{background:#fef3c7;border-color:#f59e0b;color:#92400e}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    .steps{display:grid;grid-template-columns:1fr;gap:16px}
+    .foot{display:flex;align-items:center;gap:8px;justify-content:space-between;margin-top:10px}
+    .muted{color:var(--mut)}
+    .wkgroup{display:flex;flex-wrap:wrap;gap:12px}
+    .wkitem{display:flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid #d1d5db;border-radius:8px;background:#fff}
+    .list{border:1px dashed #dbeafe;border-radius:8px;padding:8px;background:#f8fafc;max-height:240px;overflow:auto}
+    .pill{border:1px solid #e5e7eb;border-radius:999px;padding:4px 8px;background:#fff;display:inline-flex;gap:6px;align-items:center;margin:2px}
+    .pill.click{cursor:pointer}
+    .pill .x{color:#777;cursor:pointer;font-weight:700}
+    .small{font-size:12px}
+    .hidden{display:none!important}
+    .error{color:#dc2626;font-size:13px;pointer-events:none}
+    .dateCard{border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:12px;background:#fff}
+    .dateHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .roleRow{display:grid;grid-template-columns:160px 1fr 1fr;gap:8px;padding:6px 0;border-top:1px dashed #e5e7eb;align-items:flex-start}
+    .roleRow:first-of-type{border-top:none}
+    .role{font-weight:600}
+    .hint{color:var(--mut)}
+    .roleRow .name{white-space:normal;word-break:break-word;overflow-wrap:anywhere}
+    .dateCard.cancelled{background:#eaf2ff;border-color:#cfe0ff}
+    .roleRow.roleAssign{background:#e0f2fe;border-radius:8px;padding:6px 8px}
+    .roleRow.topics{background:#fff9db;border-top-color:#f1e9b6}
+    .roleRow.topics .role{margin-bottom:0;font-size:12px;text-decoration:underline}
+    .roleRow.topics .name{font-size:15px}
+    .topicCard{border:1px solid var(--bd);border-radius:10px;padding:10px;background:#fff}
+    .topicHead{display:flex;align-items:center;justify-content:space-between}
+    .topicBody{display:flex;gap:8px;margin-top:6px;align-items:center}
+    .topicList{margin-top:8px}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#fee2e2;color:#b91c1c;font-size:12px;margin-left:8px}
+    .ac-wrap{position:relative;display:flex;gap:8px;align-items:center}
+    .ac-list{position:absolute;top:100%;left:0;right:0;z-index:10;background:#fff;border:1px solid #d1d5db;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,.08);margin-top:4px;max-height:240px;overflow:auto}
+    .ac-item{padding:8px 10px;cursor:pointer;white-space:normal;overflow-wrap:anywhere;word-break:break-word}
+    .ac-item:hover,.ac-item.active{background:#eef2ff}
+    .ac-empty{padding:8px 10px;color:#6b7280}
+    .pill{white-space:normal;overflow-wrap:anywhere;word-break:break-word;max-width:100%}
+    #printHeader{display:none}
+
+    /* Profil-Auswahl Overlay */
+    .profile-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,.65);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:9999;
+    }
+    .profile-dialog{
+      background:#ffffff;
+      border-radius:16px;
+      padding:20px 24px;
+      max-width:420px;
+      width:90%;
+      box-shadow:0 20px 60px rgba(15,23,42,.35);
+      text-align:left;
+    }
+    .profile-dialog h2{
+      margin:0 0 8px;
+      font-size:18px;
+    }
+    .profile-dialog p{
+      margin:0 0 12px;
+    }
+    .profile-list{
+      margin-top:8px;
+      max-height:260px;
+      overflow:auto;
+    }
+    .profile-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin-bottom:6px;
+    }
+    .profile-row button.primary{
+      flex:1;
+      text-align:left;
+    }
+    .profile-add{
+      margin-top:12px;
+    }
+
+    @media print {
+      *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+      header,#step1,#step2,#step3,#step4,#exportPdfBtn,#exportPngBtn,.toolbar button,input,select,textarea,.ac-list{display:none!important}
+      body{background:#fff!important;margin:0!important;font-size:11pt!important;line-height:1.25!important}
+      #print-wrapper{padding-top:0!important;display:block!important;position:relative!important}
+      main{padding:0!important}
+      .steps{display:block!important}
+      .stack{display:block!important}
+      .row{display:block!important}
+      #result{border:none!important;box-shadow:none!important;padding:0!important;margin:0!important}
+      #resultCards{display:block!important;margin:0 10mm!important;padding:0!important}
+      @page{size:A4;margin:10mm}
+      .dateCard{display:block!important;padding:8px!important;margin:0 0 8px 0!important;border-radius:4px!important;page-break-inside:avoid!important;break-inside:avoid!important;overflow:visible!important}
+      .dateHead{display:flex!important;justify-content:space-between!important;margin-bottom:4px!important}
+      .roleRow{padding:3px 0!important;gap:6px!important;grid-template-columns:130px 1fr 1fr!important;font-size:10pt!important;page-break-inside:avoid!important;break-inside:avoid!important}
+      .roleRow .name{line-height:1.2!important}
+      .roleRow.topics .name{font-size:11pt!important}
+      .roleRow,.roleRow *{page-break-inside:avoid!important;break-inside:avoid!important}
+      #printHeader{display:flex!important;position:static!important;height:10mm;padding:2mm 10mm;background:#f0f0f0;color:#333;font-weight:600;font-size:11pt;border-bottom:1px solid #ccc;align-items:center;justify-content:space-between;box-sizing:border-box;z-index:9999;margin-bottom:4mm}
+      #printHeader .ph-center{flex:1;text-align:center}
+      #printHeader .ph-right{text-align:right;font-size:9pt}
+    }
+  </style>
+</head>
+<body>
+  <!-- Profil-Auswahl beim Start (mit Profil-Verwaltung) -->
+  <div id="profileOverlay" class="profile-overlay">
+    <div class="profile-dialog">
+      <h2>Profil auswählen</h2>
+      <p class="small muted">Profile können benannt, angelegt und gelöscht werden. Maximal 5 Profile.</p>
+
+      <div id="profileList" class="profile-list"></div>
+
+      <div class="profile-add">
+        <label class="small" for="profileNameInput">Neues Profil anlegen</label>
+        <div class="row">
+          <input type="text" id="profileNameInput" placeholder="Profilname (z. B. Kinderstunde Nord)" />
+          <button type="button" class="primary" id="addProfileBtn">Profil hinzufügen</button>
+        </div>
+        <div id="profileHint" class="small muted">Maximal 5 Profile möglich.</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="printHeader">
+    <div class="ph-center">Planung</div>
+    <div class="ph-right"></div>
+  </div>
+  <div id="print-wrapper">
+    <header>
+      <h1>Planerassistent</h1>
+      <!-- Anzeige des aktuell ausgewählten Profils -->
+      <div class="muted small" id="activeProfileDisplay"></div>
+    </header>
+    <main>
+      <section class="steps">
+
+        <div class="card stack" id="step1">
+          <h2>Schritt 1 – Zeitraum, Rollen &amp; Wochentage</h2>
+          <div class="stack">
+            <label><strong>Listenart</strong></label>
+            <div class="row" id="listTypeGroup">
+              <label><input type="radio" name="listType" value="week" /> Woche</label>
+              <label><input type="radio" name="listType" value="month" checked /> Monat</label>
+              <label><input type="radio" name="listType" value="year" /> Jahr</label>
+              <label><input type="radio" name="listType" value="custom" /> Benutzerdefiniert</label>
+            </div>
+          </div>
+          <div id="rangeWrap" class="stack"></div>
+
+          <div class="stack">
+            <label><strong>Rollen pro Termin</strong></label>
+            <div class="row">
+              <input id="roleName" type="text" placeholder="Neue Rolle (z. B. Lektion, Helfer, Basteln)" />
+              <button type="button" id="addRole" class="primary">Rolle hinzufügen</button>
+            </div>
+            <div class="row">
+              <label><strong>Rollen per CSV importieren</strong></label>
+            </div>
+            <div class="row">
+              <input type="file" id="rolesCsvFile" accept=".csv,text/csv" />
+            </div>
+            <div class="small muted" id="rolesCsvInfo"></div>
+            <div class="stack">
+              <label><strong>Importierte Rollen (anklicken zum Hinzufügen)</strong></label>
+              <div id="rolesImportedList" class="list"></div>
+            </div>
+            <div id="rolesList" class="list"></div>
+          </div>
+
+          <div class="stack">
+            <label><strong>Relevante Wochentage der Liste</strong> (Checkboxen)</label>
+            <div id="globalWeekdays" class="wkgroup"></div>
+            <div class="toolbar">
+              <button type="button" class="ghost" id="wdTueFriSun">Di, Fr, So</button>
+              <button type="button" class="ghost" id="wdAll">Alle</button>
+              <button type="button" class="ghost" id="wdNone">Keine</button>
+              <button type="button" class="ghost" id="wdSunday">So</button>
+            </div>
+          </div>
+
+          <div class="foot">
+            <span class="muted small">Konfiguration bleibt lokal im Browser</span>
+            <div class="toolbar">
+              <button type="button" class="primary" id="toStep2">Weiter zu Schritt 2</button>
+            </div>
+          </div>
+          <div class="error" id="errStep1"></div>
+        </div>
+
+        <div class="card stack hidden" id="step2">
+          <h2>Schritt 2 – Personen auswählen/anlegen</h2>
+          <div class="stack">
+            <label><strong>Neue Person (manuell)</strong></label>
+            <div class="row">
+              <input id="personName" type="text" placeholder="Name eingeben…" />
+              <button type="button" id="addPerson" class="primary">Hinzufügen</button>
+            </div>
+          </div>
+          <div class="stack">
+            <label><strong>CSV lokal importieren</strong> (je Zeile ein Name oder erste Spalte)</label>
+            <div class="row">
+              <input type="file" id="csvLocalFile" accept=".csv,text/csv" />
+            </div>
+            <div class="small muted" id="csvLocalInfo"></div>
+          </div>
+          <div class="stack">
+            <label><strong>Importierte Namen (anklicken zum Hinzufügen)</strong></label>
+            <div id="csvNamesList" class="list"></div>
+            <div class="toolbar">
+              <button type="button" id="addAllCsvNames" class="ghost">Alle importierten Namen hinzufügen</button>
+            </div>
+            <div class="small muted" id="csvAllInfo"></div>
+          </div>
+          <div class="stack">
+            <label><strong>Personen</strong></label>
+            <div id="personsList" class="list"></div>
+          </div>
+          <div class="foot">
+            <button type="button" class="ghost" id="back1">Zurück</button>
+            <div class="toolbar">
+              <button type="button" class="primary" id="toStep3">Weiter zu Schritt 3</button>
+            </div>
+          </div>
+          <div class="error" id="errStep2"></div>
+        </div>
+
+        <div class="card stack hidden" id="step3">
+          <h2>Schritt 3 – Verfügbarkeit je Person</h2>
+          <div class="toolbar">
+            <button type="button" class="ghost" id="wkAllPersons">Alle Tage für alle Personen</button>
+          </div>
+          <div id="availabilityWrap" class="stack"></div>
+          <div class="foot">
+            <button type="button" class="ghost" id="back2">Zurück</button>
+            <div class="toolbar">
+              <button type="button" class="primary" id="toStep4">Weiter zu Schritt 4 (Themen)</button>
+            </div>
+          </div>
+          <div class="error" id="errStep3"></div>
+        </div>
+
+        <div class="card stack hidden" id="step4">
+          <h2>Schritt 4 – Themen je Datum</h2>
+          <div class="small muted">Für jeden Termin im Zeitraum eigene Themen festlegen. Wenn ein Termin (z. B. Sonntag) ausfällt, kannst du ihn hier markieren und einen Grund eintragen.</div>
+
+          <div class="card stack">
+            <label><strong>Themen‑Katalog (CSV import)</strong> – die importierten Themen erscheinen als Vorschläge in den Suchfeldern unten.</label>
+            <div class="row">
+              <input type="file" id="topicsCsvFile" accept=".csv,text/csv" />
+            </div>
+            <div class="small muted" id="topicsCsvInfo"></div>
+          </div>
+
+          <div class="card stack" id="prevPlanCard">
+            <label><strong>Vorherige Pläne</strong></label>
+            <div id="prevPlanInfo" class="small muted"></div>
+            <div class="row">
+              <label class="small">Gespeicherte Pläne:
+                <select id="prevPlanSelect"></select>
+              </label>
+              <button type="button" class="ghost" id="showPrevPlanBtn">Vorherigen Plan anzeigen</button>
+            </div>
+            <div id="prevPlanContent" class="list hidden"></div>
+          </div>
+
+          <div id="topicsWrap" class="stack"></div>
+          <div class="foot">
+            <button type="button" class="ghost" id="back3">Zurück</button>
+            <div class="toolbar">
+              <button type="button" class="success" id="genPlan">Plan erstellen</button>
+            </div>
+          </div>
+          <div class="error" id="errStep4"></div>
+        </div>
+
+        <div class="card stack hidden" id="result">
+          <div id="resultCards"></div>
+          <div class="foot">
+            <!-- Button links: Plan neu erstellen -->
+            <button type="button" class="ghost" id="restartBtn">Plan neu erstellen</button>
+
+            <div class="toolbar">
+              <button type="button" class="success" id="exportPdfBtn" onclick="window.print()">Als PDF exportieren</button>
+              <button type="button" class="success" id="exportPngBtn">Als PNG exportieren</button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- html2canvas korrekt eingebunden -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const fmtDe=new Intl.DateTimeFormat('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+        const wdFull=i=>['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'][i];
+        const wdOrder=[1,2,3,4,5,6,0];
+        const pad=n=>n<10?'0'+n:''+n;
+        const isoLocal=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+        const parseISO=s=>{const[y,m,da]=(s||'').split('-').map(Number);return new Date(y||1970,(m||1)-1,da||1)};
+        const normDate=sOrDate=>typeof sOrDate==='string'?isoLocal(parseISO(sOrDate)):isoLocal(sOrDate);
+        const nextDay=(d,n=1)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
+        const uid=()=>Math.random().toString(36).slice(2,9);
+        const el=id=>document.getElementById(id);
+        const escapeHtml=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        const normalizeForCompare=str=>(str||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+        function hashString(str){let h=5381;for(let i=0;i<str.length;i++){h=((h<<5)+h)+str.charCodeAt(i);h&=0xffffffff}return(h>>>0).toString(16)}
+
+        let range={type:'week',start:'',end:'',weekdays:[],roles:[],topicsByDate:{},cancelled:{}};
+        let persons=[];
+        let avail={};
+        let currentPlan=[];
+        let csvNames=[];
+        let topicCatalog=[];
+        let rolesCatalog=[];
+        let planHistory=[]; // bis zu 15 Pläne
+        let currentProfile=null; // aktives Profil (ID-String)
+        let profiles=[]; // Profil-Objekte {id,name}
+
+        /* --- Hilfsfunktionen für profil-spezifisches LocalStorage --- */
+        // Hinweis: 'ksp_profiles' und 'ksp_currentProfileId' bleiben global.
+        function lsKey(key){
+          // TODO: Bei Bedarf Key-Schema anpassen (z.B. Prefix ändern)
+          return currentProfile ? `ksp_${currentProfile}_${key}` : `ksp_${key}`;
+        }
+        function lsGet(key){
+          try{
+            if(typeof localStorage==='undefined') return null;
+            return localStorage.getItem(lsKey(key));
+          }catch(e){
+            console.warn('Fehler beim Lesen aus LocalStorage:', e);
+            return null;
+          }
+        }
+        function lsSet(key,value){
+          try{
+            if(typeof localStorage==='undefined') return;
+            localStorage.setItem(lsKey(key), value);
+          }catch(e){
+            console.warn('Fehler beim Schreiben in LocalStorage:', e);
+          }
+        }
+
+        /* --- Profil-Name-Anzeige --- */
+        function getCurrentProfileName(){
+          const p=profiles.find(p=>p.id===currentProfile);
+          return p?p.name:'';
+        }
+        function updateProfileDisplay(){
+          const displayEl=el('activeProfileDisplay');
+          const printRight=document.querySelector('#printHeader .ph-right');
+          const name=getCurrentProfileName();
+          if(displayEl){
+            displayEl.textContent = name ? `Aktives Profil: ${name}` : '';
+          }
+          if(printRight){
+            printRight.textContent = name ? `Profil: ${name}` : '';
+          }
+        }
+
+        /* --- Profile speichern/laden --- */
+        function loadProfilesFromStorage(){
+          try{
+            if(typeof localStorage==='undefined')return;
+            const raw=localStorage.getItem('ksp_profiles');
+            if(raw){
+              const parsed=JSON.parse(raw);
+              if(Array.isArray(parsed) && parsed.length>0){
+                profiles=parsed;
+                return;
+              }
+            }
+          }catch(e){
+            console.warn('Profile konnten nicht geladen werden, Standardprofile werden verwendet.',e);
+          }
+          // Standard-Profile anlegen, falls keine vorhanden
+          profiles=[];
+          for(let i=1;i<=3;i++){
+            profiles.push({id:uid(),name:'Profil '+i});
+          }
+          saveProfilesToStorage();
+        }
+        function saveProfilesToStorage(){
+          try{
+            if(typeof localStorage==='undefined')return;
+            localStorage.setItem('ksp_profiles',JSON.stringify(profiles));
+          }catch(e){
+            console.warn('Profile konnten nicht im LocalStorage gespeichert werden:',e);
+          }
+        }
+        function selectProfile(profileId){
+          currentProfile=profileId;
+          try{
+            if(typeof localStorage!=='undefined'){
+              localStorage.setItem('ksp_currentProfileId',profileId);
+            }
+          }catch(e){
+            console.warn('Aktives Profil konnte nicht im LocalStorage gespeichert werden:',e);
+          }
+
+          // Zustand für das gewählte Profil zurücksetzen
+          range={type:range.type||'week',start:range.start,end:range.end,weekdays:[],roles:[],topicsByDate:{},cancelled:{}};
+          persons=[];
+          avail={};
+          currentPlan=[];
+          csvNames=[];
+          topicCatalog=[];
+          rolesCatalog=[];
+          planHistory=[];
+
+          // Profil-spezifische Daten aus LocalStorage laden
+          loadFromLocalStorageIfAvailable();
+          // UI nach Laden aktualisieren
+          renderRolesList();
+          renderRolesImportedList();
+          renderCsvNamesList();
+          renderPersonsList();
+          renderAvailability();
+          renderTopicsConfig();
+          updatePrevPlanUI();
+
+          // Profil-Anzeige aktualisieren
+          updateProfileDisplay();
+
+          const overlay=document.getElementById('profileOverlay');
+          if(overlay)overlay.classList.add('hidden');
+        }
+        function deleteProfile(profileId){
+          profiles=profiles.filter(p=>p.id!==profileId);
+          saveProfilesToStorage();
+          renderProfileList();
+          // TODO: Falls das aktuell aktive Profil gelöscht wird, könnte man eine Neuauswahl erzwingen.
+        }
+        function renderProfileList(){
+          const list=el('profileList');
+          const hint=el('profileHint');
+          const addBtn=el('addProfileBtn');
+          if(!list)return;
+          list.innerHTML='';
+          if(!profiles.length){
+            const msg=document.createElement('div');
+            msg.className='small muted';
+            msg.textContent='Noch keine Profile vorhanden. Lege unten ein neues Profil an.';
+            list.appendChild(msg);
+          }else{
+            profiles.forEach(p=>{
+              const row=document.createElement('div');
+              row.className='profile-row';
+              const btn=document.createElement('button');
+              btn.type='button';
+              btn.className='primary';
+              btn.textContent=p.name;
+              btn.addEventListener('click',()=>selectProfile(p.id));
+              const del=document.createElement('button');
+              del.type='button';
+              del.className='warn';
+              del.textContent='Löschen';
+              del.addEventListener('click',()=>deleteProfile(p.id));
+              row.appendChild(btn);
+              row.appendChild(del);
+              list.appendChild(row);
+            });
+          }
+          const full=profiles.length>=5;
+          if(addBtn)addBtn.disabled=full;
+          if(hint){
+            hint.textContent=full
+              ? 'Maximal 5 Profile möglich. Lösche ein Profil, um ein neues anzulegen.'
+              : 'Maximal 5 Profile möglich.';
+          }
+        }
+
+        /* --- Parsing-Funktionen --- */
+        function parseNamesFromText(text){
+          if(text && text.charCodeAt(0)===0xFEFF)text=text.slice(1);
+          return String(text).split(/\r?\n/).map(l=>l.trim()).filter(l=>l).reduce((acc,line)=>{
+            const cells=line.split(/[;,]/).map(c=>c.trim()).filter(Boolean);
+            if(!cells.length)return acc;
+            if(cells[0].toLowerCase()==='name')return acc;
+            acc.push(cells[0]);
+            return acc;
+          },[]).filter((v,i,a)=>a.indexOf(v)===i);
+        }
+        function parseTopicsFromText(text){
+          if(text && text.charCodeAt(0)===0xFEFF)text=text.slice(1);
+          const lines=String(text).split(/\r?\n/);
+          const topics=[];
+          for(let raw of lines){
+            if(!raw)continue;
+            let line=raw.trim();
+            if(!line)continue;
+            line=line.replace(/^"+|"+$/g,'').replace(/[;]+$/g,'').replace(/\s+/g,' ').trim();
+            const low=line.toLowerCase();
+            if(low==='thema'||low==='topic'||low==='titel'||low==='title')continue;
+            if(line)topics.push(line);
+          }
+          const seen=new Set(),unique=[];
+          for(const t of topics){if(!seen.has(t)){seen.add(t);unique.push(t)}}
+          return unique;
+        }
+        function parseRolesFromText(text){
+          if(text && text.charCodeAt(0)===0xFEFF)text=text.slice(1);
+          const roles=[];
+          String(text).split(/\r?\n/).map(l=>l.trim()).filter(l=>l).forEach(line=>{
+            const cells=line.split(/[;,]/).map(c=>c.trim()).filter(Boolean);
+            if(!cells.length)return;
+            const first=cells[0];const low=first.toLowerCase();
+            if(low==='rolle'||low==='rollen'||low==='role'||low==='roles')return;
+            roles.push(first);
+          });
+          const seen=new Set(),unique=[];
+          for(const r of roles){if(!seen.has(r)){seen.add(r);unique.push(r)}}
+          return unique;
+        }
+
+        /* --- CSV-Listen-Rendering --- */
+        function renderCsvNamesList(){
+          const box=el('csvNamesList');if(!box)return;
+          box.innerHTML='';
+          if(!csvNames.length){
+            box.innerHTML='<div class="muted">Noch keine Namen importiert. Datei wählen – der Import startet automatisch.</div>';
+            updateAddAllButtonState();return;
+          }
+          [...csvNames].sort((a,b)=>a.localeCompare(b,'de')).forEach(name=>{
+            const already=persons.some(p=>p.name===name);
+            const pill=document.createElement('span');
+            pill.className='pill click';
+            pill.title=already?'Schon hinzugefügt':'Klicken, um hinzuzufügen';
+            pill.style.opacity=already?'0.6':'1';
+            pill.innerHTML=`<span>${escapeHtml(name)}</span>${already?'<span class="small muted">✔</span>':'<span class="small">➕</span>'}`;
+            pill.addEventListener('click',()=>{addPersonByName(name);renderCsvNamesList()});
+            box.appendChild(pill);
+          });
+          updateAddAllButtonState();
+        }
+        function renderRolesImportedList(){
+          const box=el('rolesImportedList');if(!box)return;
+          box.innerHTML='';
+          if(!rolesCatalog.length){
+            box.innerHTML='<div class="muted">Noch keine Rollen per CSV importiert.</div>';return;
+          }
+          [...rolesCatalog].sort((a,b)=>a.localeCompare(b,'de')).forEach(role=>{
+            const already=range.roles.includes(role);
+            const pill=document.createElement('span');
+            pill.className='pill click';
+            pill.title=already?'Schon in der Rollenliste':'Klicken, um Rolle hinzuzufügen';
+            pill.style.opacity=already?'0.6':'1';
+            pill.innerHTML=`<span>${escapeHtml(role)}</span>${already?'<span class="small muted">✔</span>':'<span class="small">➕</span>'}`;
+            pill.addEventListener('click',()=>addRoleFromCatalog(role));
+            box.appendChild(pill);
+          });
+        }
+        function addRoleFromCatalog(role){
+          const r=(role||'').trim();if(!r)return;
+          if(!range.roles.includes(r)){range.roles.push(r);renderRolesList();renderRolesImportedList();renderAvailability();}
+        }
+
+        /* --- Themen-Autocomplete --- */
+        function getTopicMatches(query,max=50){
+          const q=normalizeForCompare((query||'').trim());if(!q)return[];
+          const out=[];for(const t of topicCatalog){if(normalizeForCompare(t).includes(q)){out.push(t);if(out.length>=max)break}}return out;
+        }
+        function attachAutocomplete(inputEl,onPick){
+          let wrap=inputEl.closest('.ac-wrap');
+          if(!wrap){wrap=document.createElement('div');wrap.className='ac-wrap';inputEl.parentElement.replaceChild(wrap,inputEl);wrap.appendChild(inputEl);}
+          let listEl=wrap.querySelector('.ac-list');
+          if(!listEl){listEl=document.createElement('div');listEl.className='ac-list hidden';wrap.appendChild(listEl);}
+          let activeIndex=-1;
+          const hide=()=>{listEl.classList.add('hidden');listEl.innerHTML='';activeIndex=-1};
+          const show=items=>{
+            listEl.innerHTML='';
+            if(!items.length){
+              const d=document.createElement('div');d.className='ac-empty';d.textContent='Keine passenden Themen.';listEl.appendChild(d);
+            }else{
+              items.forEach(txt=>{
+                const it=document.createElement('div');it.className='ac-item';it.textContent=txt;
+                it.addEventListener('mousedown',e=>{e.preventDefault();onPick(txt);hide()});
+                listEl.appendChild(it);
+              });
+            }
+            listEl.classList.remove('hidden');activeIndex=-1;
+          };
+          const update=()=>{const v=inputEl.value||'';const m=getTopicMatches(v);if(!v.trim()||!m.length)return hide();show(m)};
+          const move=delta=>{
+            const items=[...listEl.querySelectorAll('.ac-item')];if(!items.length)return;
+            activeIndex=(activeIndex+delta+items.length)%items.length;
+            items.forEach((el,i)=>el.classList.toggle('active',i===activeIndex));
+          };
+          const pickActive=()=>{
+            const items=[...listEl.querySelectorAll('.ac-item')];
+            if(activeIndex>=0&&activeIndex<items.length){onPick(items[activeIndex].textContent||'');hide();return true}
+            return false;
+          };
+          inputEl.addEventListener('input',update);
+          inputEl.addEventListener('focus',update);
+          inputEl.addEventListener('blur',()=>setTimeout(hide,150));
+          inputEl.addEventListener('keydown',e=>{
+            if(e.key==='ArrowDown'){e.preventDefault();move(1)}
+            else if(e.key==='ArrowUp'){e.preventDefault();move(-1)}
+            else if(e.key==='Enter'){if(!pickActive()){const v=inputEl.value.trim();if(v)onPick(v);setTimeout(()=>inputEl.value='',0)}e.preventDefault()}
+            else if(e.key==='Escape'){hide()}
+          });
+          hide();
+        }
+
+        /* --- CSV-Importe --- */
+        function importCsvFile(file){
+          const info=el('csvLocalInfo');if(!file){if(info)info.textContent='Bitte zuerst eine CSV auswählen.';return}
+          if(info)info.textContent=`Lade: ${file.name} …`;
+          const reader=new FileReader();
+          reader.onload=e=>{
+            try{
+              const text=e.target.result||'';const newHash=hashString(String(text));
+              const oldHash=lsGet('personsCsvHash')||'';
+              csvNames=parseNamesFromText(String(text));
+              try{
+                lsSet('personsCsvText',String(text));
+                lsSet('personsCsvHash',newHash);
+              }catch{}
+              renderCsvNamesList();
+              if(info){
+                if(!csvNames.length)info.textContent='Keine verwertbaren Namen gefunden.';
+                else if(oldHash&&oldHash===newHash)info.textContent=`Import erfolgreich: ${csvNames.length} Namen (identisch zur letzten gespeicherten Version).`;
+                else if(oldHash&&oldHash!==newHash)info.textContent=`Import erfolgreich: ${csvNames.length} Namen (neue Version erkannt).`;
+                else info.textContent=`Import erfolgreich: ${csvNames.length} Namen. Klicke auf einen Namen, um ihn zu übernehmen.`;
+              }
+              if(persons.length===0&&csvNames.length>0)addAllImportedNames();
+            }catch(err){console.error(err);if(info)info.textContent='Fehler beim Lesen/Parsen der CSV.'}
+          };
+          reader.onerror=()=>{if(info)info.textContent='Fehler beim Lesen der Datei.'};
+          reader.readAsText(file,'utf-8');
+        }
+        function importTopicsCsvFile(file){
+          const info=el('topicsCsvInfo');if(!file){if(info)info.textContent='Bitte zuerst eine CSV auswählen.';return}
+          if(info)info.textContent=`Lade Themen: ${file.name} …`;
+          const reader=new FileReader();
+          reader.onload=e=>{
+            try{
+              const text=e.target.result||'';const newHash=hashString(String(text));
+              const oldHash=lsGet('topicsCsvHash')||'';
+              topicCatalog=parseTopicsFromText(String(text));
+              try{
+                lsSet('topicsCsvText',String(text));
+                lsSet('topicsCsvHash',newHash);
+              }catch{}
+              if(info){
+                if(!topicCatalog.length)info.textContent='Keine verwertbaren Themen gefunden.';
+                else if(oldHash&&oldHash===newHash)info.textContent=`Import erfolgreich: ${topicCatalog.length} Themen (identisch zur letzten gespeicherten Version). Schlagwortsuche aktiv (Teilwörter werden gefunden).`;
+                else if(oldHash&&oldHash!==newHash)info.textContent=`Import erfolgreich: ${topicCatalog.length} Themen (neue Version erkannt). Schlagwortsuche aktiv (Teilwörter werden gefunden).`;
+                else info.textContent=`Import erfolgreich: ${topicCatalog.length} Themen. Schlagwortsuche aktiv (Teilwörter werden gefunden).`;
+              }
+            }catch(err){console.error(err);if(info)info.textContent='Fehler beim Lesen/Parsen der CSV.'}
+          };
+          reader.onerror=()=>{if(info)info.textContent='Fehler beim Lesen der Datei.'};
+          reader.readAsText(file,'utf-8');
+        }
+        function importRolesCsvFile(file){
+          const info=el('rolesCsvInfo');if(!file){if(info)info.textContent='Bitte zuerst eine Rollen-CSV auswählen.';return}
+          if(info)info.textContent=`Lade Rollen: ${file.name} …`;
+          const reader=new FileReader();
+          reader.onload=e=>{
+            try{
+              const text=e.target.result||'';const newHash=hashString(String(text));
+              const oldHash=lsGet('rolesCsvHash')||'';
+              rolesCatalog=parseRolesFromText(String(text));
+              const rolesFromCsv=[...rolesCatalog];if(!rolesFromCsv.length){if(info)info.textContent='Keine verwertbaren Rollen gefunden.';renderRolesImportedList();return}
+              let added=0,skipped=0;
+              rolesFromCsv.forEach(r=>{const role=(r||'').trim();if(!role)return;if(range.roles.includes(role))skipped++;else{range.roles.push(role);added++;}});
+              try{
+                lsSet('rolesCsvText',String(text));
+                lsSet('rolesCsvHash',newHash);
+              }catch{}
+              renderRolesList();renderRolesImportedList();
+              if(info){
+                if(oldHash&&oldHash===newHash)info.textContent=`Import erfolgreich: ${rolesFromCsv.length} Rollen (identisch zur letzten gespeicherten Version). Davon ${added} neu, ${skipped} bereits vorhanden.`;
+                else if(oldHash&&oldHash!==newHash)info.textContent=`Import erfolgreich: ${rolesFromCsv.length} Rollen (neue Version erkannt). Davon ${added} neu, ${skipped} bereits vorhanden.`;
+                else info.textContent=`Import erfolgreich: ${rolesFromCsv.length} Rollen. Davon ${added} neu, ${skipped} bereits vorhanden.`;
+              }
+            }catch(err){console.error(err);if(info)info.textContent='Fehler beim Lesen der Rollen-CSV.'}
+          };
+          reader.onerror=()=>{if(info)info.textContent='Fehler beim Lesen der Rollen-Datei.'};
+          reader.readAsText(file,'utf-8');
+        }
+        function wireLocalCsvImport(){const f=el('csvLocalFile');if(!f)return;f.addEventListener('change',()=>{const file=f.files?.[0];if(file)importCsvFile(file);});}
+        function wireTopicsCsvImport(){const f=el('topicsCsvFile');if(!f)return;f.addEventListener('change',()=>{const file=f.files?.[0];if(file)importTopicsCsvFile(file);});}
+        function wireRolesCsvImport(){const f=el('rolesCsvFile');if(!f)return;f.addEventListener('change',()=>{const file=f.files?.[0];if(file)importRolesCsvFile(file);});}
+
+        /* --- Personen & Verfügbarkeiten --- */
+        function renderPersonsList(){
+          const list=el('personsList');if(!list)return;
+          list.innerHTML='';
+          if(!persons.length){list.innerHTML='<div class="muted">Noch keine Personen hinzugefügt.</div>';updateAddAllButtonState();return;}
+          persons.forEach(p=>{
+            const row=document.createElement('div');row.className='row';row.style.justifyContent='space-between';
+            const left=document.createElement('div');left.innerHTML=`<strong>${escapeHtml(p.name)}</strong>`;
+            const del=document.createElement('button');del.type='button';del.className='ghost';del.textContent='Entfernen';
+            del.addEventListener('click',()=>{persons=persons.filter(x=>x.id!==p.id);delete avail[p.id];renderPersonsList();renderAvailability();renderCsvNamesList();});
+            row.append(left,del);list.appendChild(row);
+          });
+          updateAddAllButtonState();
+        }
+        function addPersonByName(n){
+          const name=String(n||'').trim();if(!name||persons.some(p=>p.name===name))return;
+          const p={id:uid(),name};persons.push(p);avail[p.id]={weekdays:new Set(),unavail:new Set(),roles:new Set()};renderPersonsList();renderAvailability();
+        }
+        function addAllImportedNames(){
+          let added=0;
+          csvNames.forEach(name=>{
+            if(!persons.some(p=>p.name===name)){
+              const p={id:uid(),name};persons.push(p);avail[p.id]={weekdays:new Set(),unavail:new Set(),roles:new Set()};added++;
+            }
+          });
+          renderPersonsList();renderAvailability();renderCsvNamesList();
+          const info=el('csvAllInfo');if(info)info.textContent=added>0?`Alle hinzugefügt: ${added} neue Person(en).`:'Es waren bereits alle importierten Namen in der Personenliste.';
+        }
+        function updateAddAllButtonState(){
+          const btn=el('addAllCsvNames');if(!btn)return;
+          const toAdd=csvNames.filter(n=>!persons.some(p=>p.name===n));
+          btn.disabled=!csvNames.length||!toAdd.length;
+          btn.textContent=toAdd.length?`Alle importierten Namen hinzufügen (${toAdd.length})`:'Alle importierten Namen hinzugefügt (✔)';
+        }
+        function renderAvailability(){
+          const wrap=el('availabilityWrap');if(!wrap)return;
+          wrap.innerHTML='';
+          if(!persons.length){wrap.innerHTML='<div class="muted">Keine Personen vorhanden.</div>';return;}
+          const allDates=buildEventDatesAll();
+          persons.forEach(p=>{
+            if(!avail[p.id])avail[p.id]={weekdays:new Set(),unavail:new Set(),roles:new Set()};
+            if(!avail[p.id].unavail)avail[p.id].unavail=new Set();
+            const card=document.createElement('div');card.className='card stack';
+            const h=document.createElement('h3');h.textContent=p.name;h.style.margin='0';
+            const wkLabel=document.createElement('label');wkLabel.innerHTML='<strong>Verfügbare Wochentage</strong>';
+            const wkWrap=document.createElement('div');wkWrap.id=`wk-${p.id}`;
+            const allowedDaysForPerson=Array.isArray(range.weekdays)&&range.weekdays.length?wdOrder.filter(d=>range.weekdays.includes(d)):wdOrder;
+            renderWeekdayCheckboxes(wkWrap,[...avail[p.id].weekdays],{},allowedDaysForPerson);
+            const wkPreset=document.createElement('div');wkPreset.className='toolbar';
+            const bAll=document.createElement('button');bAll.type='button';bAll.className='ghost';bAll.textContent='Alle';
+            bAll.addEventListener('click',()=>setSelectedWeekdays(wkWrap,[1,2,3,4,5,6,0]));
+            const bNone=document.createElement('button');bNone.type='button';bNone.className='ghost';bNone.textContent='Keine';
+            bNone.addEventListener('click',()=>setSelectedWeekdays(wkWrap,[]));
+            wkPreset.append(bAll,bNone);
+            const rlLabel=document.createElement('label');rlLabel.innerHTML='<strong>Rollen, die diese Person übernehmen kann</strong> (leer = alle Rollen möglich)';
+            const rlWrap=document.createElement('div');rlWrap.id=`roles-${p.id}`;
+            renderRoleCheckboxes(rlWrap,range.roles,[...avail[p.id].roles]);
+            const uaLabel=document.createElement('label');uaLabel.innerHTML='<strong>Sperrtermine</strong> (an diesen Tagen kann diese Person <u>nicht</u> eingesetzt werden)';
+            const uaInfo=document.createElement('div');uaInfo.className='small muted';uaInfo.textContent='Häkchen gesetzt = gesperrt';
+            const uaList=document.createElement('div');uaList.className='list';
+            if(!allDates.length){
+              uaList.innerHTML='<div class="muted">Keine Termine im Zeitraum – bitte in Schritt 1 prüfen.</div>';
+            }else{
+              allDates.forEach(dateISO=>{
+                const d=parseISO(dateISO);
+                const row=document.createElement('div');row.className='row';row.style.alignItems='center';
+                const inputId=`ua-${p.id}-${dateISO}`;
+                const cb=document.createElement('input');cb.type='checkbox';cb.id=inputId;cb.value=dateISO;cb.checked=avail[p.id].unavail.has(dateISO);
+                cb.addEventListener('change',()=>{cb.checked?avail[p.id].unavail.add(dateISO):avail[p.id].unavail.delete(dateISO);});
+                const lab=document.createElement('label');lab.setAttribute('for',inputId);lab.textContent=`${fmtDe.format(d)} (${wdFull(d.getDay())})`;
+                row.append(cb,lab);uaList.appendChild(row);
+              });
+            }
+            card.append(h,wkLabel,wkWrap,wkPreset,rlLabel,rlWrap,uaLabel,uaInfo,uaList);wrap.appendChild(card);
+          });
+        }
+        function renderWeekdayCheckboxes(container,preselect=[],labelOverrides={},allowedDays=null){
+          if(!container)return;
+          if(!container.id)container.id='wk-'+Math.random().toString(36).slice(2,9);
+          const baseId=container.id;container.innerHTML='';
+          const wrap=document.createElement('div');wrap.className='wkgroup';
+          const days=Array.isArray(allowedDays)&&allowedDays.length?allowedDays:wdOrder;
+          days.forEach(i=>{
+            const item=document.createElement('span');item.className='wkitem';
+            const inputId=`${baseId}-day-${i}`;
+            const cb=document.createElement('input');cb.type='checkbox';cb.id=inputId;cb.value=String(i);cb.checked=preselect.includes(i);
+            const label=document.createElement('label');label.setAttribute('for',inputId);label.textContent=(labelOverrides&&Object.prototype.hasOwnProperty.call(labelOverrides,i))?labelOverrides[i]:wdFull(i);
+            item.append(cb,label);wrap.appendChild(item);
+          });
+          container.appendChild(wrap);
+        }
+        function getSelectedWeekdays(container){
+          if(!container)return[];
+          return [...container.querySelectorAll('input[type="checkbox"]')].filter(cb=>cb.checked).map(cb=>Number(cb.value)).sort((a,b)=>a-b);
+        }
+        function setSelectedWeekdays(container,values){
+          if(!container)return;
+          const set=new Set(values.map(v=>String(v)));
+          container.querySelectorAll('input[type="checkbox"]').forEach(cb=>cb.checked=set.has(cb.value));
+        }
+        function renderRoleCheckboxes(container,roles,preselect=[]){
+          if(!container)return;
+          if(!container.id)container.id='roles-'+Math.random().toString(36).slice(2,9);
+          const baseId=container.id;container.innerHTML='';
+          const wrap=document.createElement('div');wrap.className='wkgroup';
+          roles.forEach((role,idx)=>{
+            const item=document.createElement('span');item.className='wkitem';
+            const inputId=`${baseId}-role-${idx}`;
+            const cb=document.createElement('input');cb.type='checkbox';cb.id=inputId;cb.value=role;cb.checked=preselect.includes(role);
+            const label=document.createElement('label');label.setAttribute('for',inputId);label.textContent=role;
+            item.append(cb,label);wrap.appendChild(item);
+          });
+          container.appendChild(wrap);
+        }
+        function getSelectedRoles(container){
+          if(!container)return[];
+          return [...container.querySelectorAll('input[type="checkbox"]')].filter(cb=>cb.checked).map(cb=>cb.value);
+        }
+
+        /* --- Rollen-Liste & Zeitraum-Steuerung --- */
+        function renderRolesList(){
+          const box=el('rolesList');if(!box)return;
+          box.innerHTML='';
+          if(!range.roles.length){
+            box.innerHTML='<div class="muted">Noch keine Rollen. Füge oben Rollen hinzu oder importiere sie per CSV.</div>';return;
+          }
+          range.roles.forEach((role,idx)=>{
+            const row=document.createElement('div');row.className='row';row.style.justifyContent='space-between';
+            const left=document.createElement('div');left.innerHTML=`<strong>${escapeHtml(role)}</strong>`;
+            const del=document.createElement('button');del.type='button';del.className='ghost';del.textContent='Entfernen';
+            del.addEventListener('click',()=>{range.roles.splice(idx,1);renderRolesList();renderRolesImportedList();if(!el('step3').classList.contains('hidden'))renderAvailability();});
+            row.append(left,del);box.appendChild(row);
+          });
+        }
+        function renderRangeControls(){
+          const wrap=el('rangeWrap');if(!wrap)return;wrap.innerHTML='';
+          const type=range.type;const today=new Date();const year=today.getFullYear();
+          if(type==='week'){
+            const monday=(()=>{
+              const d=new Date();const day=d.getDay();const diff=(day===0?-6:1-day);return isoLocal(new Date(d.getFullYear(),d.getMonth(),d.getDate()+diff))
+            })();
+            wrap.innerHTML=`<div class="stack"><label><strong>Start der Woche</strong></label><input id="weekStart" type="date" value="${monday}" /></div>`;
+            const start=parseISO(monday);range.start=isoLocal(start);range.end=isoLocal(nextDay(start,6));
+            el('weekStart').addEventListener('change',()=>{
+              const s=el('weekStart').value;if(!s)return;const st=parseISO(s);range.start=isoLocal(st);range.end=isoLocal(nextDay(st,6));renderAvailability();
+            });
+          }else if(type==='month'){
+            const nextMonth=(today.getMonth()+1)%12;const nextYear=today.getFullYear()+(today.getMonth()===11?1:0);
+            wrap.innerHTML=`<div class="row"><label>Monat
+              <select id="selMonth">${Array.from({length:12},(_,i)=>`<option value="${i}" ${i===nextMonth?'selected':''}>${i+1}</option>`).join('')}</select></label>
+              <label>Jahr <input id="selYear" type="number" value="${nextYear}" /></label></div>`;
+            const apply=()=>{
+              const m=+el('selMonth').value;const y=+el('selYear').value;const st=new Date(y,m,1);const en=new Date(y,m+1,0);range.start=isoLocal(st);range.end=isoLocal(en);renderAvailability();
+            };
+            el('selMonth').addEventListener('change',apply);el('selYear').addEventListener('input',apply);apply();
+          }else if(type==='year'){
+            wrap.innerHTML=`<div class="stack"><label>Jahr</label><input id="selYearOnly" type="number" value="${year}" /></div>`;
+            const apply=()=>{
+              const y=+el('selYearOnly').value;range.start=isoLocal(new Date(y,0,1));range.end=isoLocal(new Date(y,11,31));renderAvailability();
+            };
+            el('selYearOnly').addEventListener('input',apply);apply();
+          }else{
+            wrap.innerHTML=`<div class="row"><label>Start <input id="cStart" type="date" value="${isoLocal(today)}"/></label><label>Ende <input id="cEnd" type="date" value="${isoLocal(nextDay(today,30))}"/></label></div>`;
+            const apply=()=>{
+              const s=el('cStart').value,e=el('cEnd').value;if(!s||!e)return;const sD=parseISO(s),eD=parseISO(e);range.start=isoLocal(sD);range.end=isoLocal(eD<sD?sD:eD);renderAvailability();
+            };
+            el('cStart').addEventListener('change',apply);el('cEnd').addEventListener('change',apply);apply();
+          }
+        }
+
+        /* --- Schritte initialisieren --- */
+        function initStep1(){
+          wireRolesCsvImport();
+          document.querySelectorAll('input[name="listType"]').forEach(r=>r.addEventListener('change',()=>{range.type=r.value;renderRangeControls();}));
+          range.type=document.querySelector('input[name="listType"]:checked').value;
+          renderRangeControls();
+          if(!Array.isArray(range.roles))range.roles=[];
+          renderRolesList();renderRolesImportedList();
+          el('addRole').addEventListener('click',()=>{
+            const name=el('roleName').value.trim();if(!name||range.roles.includes(name))return;range.roles.push(name);el('roleName').value='';renderRolesList();renderRolesImportedList();renderAvailability();
+          });
+          renderWeekdayCheckboxes(el('globalWeekdays'),[0]);
+          el('wdTueFriSun')?.addEventListener('click',()=>setSelectedWeekdays(el('globalWeekdays'),[2,5,0]));
+          el('wdAll')?.addEventListener('click',()=>setSelectedWeekdays(el('globalWeekdays'),[1,2,3,4,5,6,0]));
+          el('wdNone')?.addEventListener('click',()=>setSelectedWeekdays(el('globalWeekdays'),[]));
+          el('wdSunday')?.addEventListener('click',()=>setSelectedWeekdays(el('globalWeekdays'),[0]));
+          el('toStep2').addEventListener('click',()=>{
+            const days=getSelectedWeekdays(el('globalWeekdays'));
+            if(!days.length){el('errStep1').textContent='Bitte mindestens einen Wochentag auswählen.';return}
+            if(!range.roles.length){el('errStep1').textContent='Bitte mindestens eine Rolle anlegen oder per CSV importieren.';return}
+            el('errStep1').textContent='';range.weekdays=days;el('step1').classList.add('hidden');el('step2').classList.remove('hidden');renderAvailability();
+          });
+        }
+        function initStep2(){
+          el('addPerson').addEventListener('click',()=>{addPersonByName(el('personName').value);el('personName').value='';});
+          wireLocalCsvImport();
+          el('addAllCsvNames')?.addEventListener('click',addAllImportedNames);
+          el('back1').addEventListener('click',()=>{el('step2').classList.add('hidden');el('step1').classList.remove('hidden');});
+          el('toStep3').addEventListener('click',()=>{
+            if(!persons.length){el('errStep2').textContent='Bitte mindestens eine Person hinzufügen.';return}
+            el('errStep2').textContent='';el('step2').classList.add('hidden');el('step3').classList.remove('hidden');renderAvailability();
+          });
+          renderCsvNamesList();renderPersonsList();
+        }
+        function initStep3(){
+          el('back2').addEventListener('click',()=>{el('step3').classList.add('hidden');el('step2').classList.remove('hidden');});
+          el('wkAllPersons').addEventListener('click',()=>{
+            if(!persons.length)return;
+            persons.forEach(p=>{
+              if(!avail[p.id])avail[p.id]={weekdays:new Set(),unavail:new Set(),roles:new Set()};
+              avail[p.id].weekdays=new Set([1,2,3,4,5,6,0]);
+            });
+            renderAvailability();
+          });
+          el('toStep4').addEventListener('click',()=>{
+            persons.forEach(p=>{
+              const wkwrap=el(`wk-${p.id}`),rlwrap=el(`roles-${p.id}`);
+              if(!avail[p.id])avail[p.id]={weekdays:new Set(),unavail:new Set(),roles:new Set()};
+              if(wkwrap)avail[p.id].weekdays=new Set(getSelectedWeekdays(wkwrap));
+              if(rlwrap)avail[p.id].roles=new Set(getSelectedRoles(rlwrap));
+            });
+            if(!persons.some(p=>(avail[p.id]?.weekdays?.size||0)>0)){el('errStep3').textContent='Mindestens eine Person muss an mindestens einem Wochentag verfügbar sein.';return}
+            el('errStep3').textContent='';el('step3').classList.add('hidden');el('step4').classList.remove('hidden');renderTopicsConfig();updatePrevPlanUI();
+          });
+          renderAvailability();
+        }
+
+        /* --- Terminlisten --- */
+        function buildEventDates(){
+          const out=[];if(!range.start||!range.end)return out;
+          const start=parseISO(range.start),end=parseISO(range.end);
+          if(isNaN(start)||isNaN(end)||end<start)return out;
+          const allowed=new Set(range.weekdays||[]);let cur=start;
+          while(cur<=end){const key=isoLocal(cur);if(allowed.has(cur.getDay())&&!range.cancelled[key])out.push(key);cur=nextDay(cur,1);}
+          return out;
+        }
+        function buildEventDatesAll(){
+          const out=[];if(!range.start||!range.end)return out;
+          const start=parseISO(range.start),end=parseISO(range.end);
+          if(isNaN(start)||isNaN(end)||end<start)return out;
+          const allowed=new Set(range.weekdays||[]);let cur=start;
+          while(cur<=end){if(allowed.has(cur.getDay()))out.push(isoLocal(cur));cur=nextDay(cur,1);}
+          return out;
+        }
+
+        /* --- Themen-Konfiguration --- */
+        function renderTopicsConfig(){
+          const wrap=el('topicsWrap');if(!wrap)return;
+          wrap.innerHTML='';
+          const events=buildEventDatesAll();
+          if(!events.length){wrap.innerHTML='<div class="muted">Keine Termine im Zeitraum. Bitte Schritt 1 prüfen.</div>';return;}
+          events.forEach(dateISO=>{
+            const key=normDate(dateISO);if(!Array.isArray(range.topicsByDate[key]))range.topicsByDate[key]=[];
+            const isCancelled=!!range.cancelled[key];const cancelReason=range.cancelled[key]||'';const d=parseISO(key);
+            const card=document.createElement('div');card.className='topicCard';
+            const head=document.createElement('div');head.className='topicHead';head.innerHTML=`<strong>${fmtDe.format(d)} (${wdFull(d.getDay())})</strong>`;
+            if(isCancelled){const badge=document.createElement('span');badge.className='badge';badge.textContent='Termin fällt aus';head.appendChild(badge);}
+            const body=document.createElement('div');body.className='topicBody';
+            const reason=document.createElement('input');reason.type='text';reason.placeholder='Grund (z. B. „Abendmahl“ oder „Vortrag“) – optional';reason.style.flex='1';reason.value=cancelReason;
+            const toggleCancel=document.createElement('button');toggleCancel.type='button';toggleCancel.className=isCancelled?'warn':'ghost';toggleCancel.textContent=isCancelled?'Ausfall entfernen':'Ausfall markieren';
+            toggleCancel.addEventListener('click',()=>{
+              const txt=reason.value.trim();
+              if(isCancelled)delete range.cancelled[key];else range.cancelled[key]=txt;renderTopicsConfig();
+            });
+            body.append(reason,toggleCancel);
+            const list=document.createElement('div');list.className='topicList';
+            if(isCancelled){
+              const info=document.createElement('div');info.className='muted small';info.textContent=`Dieser Termin wurde als Ausfall markiert.${cancelReason?' Grund: '+cancelReason:''}`;list.appendChild(info);
+            }else{
+              const inp=document.createElement('input');inp.type='text';inp.placeholder='Thema hinzufügen (Schlagwortsuche: Teilwort)…';inp.style.flex='1';
+              const addBtn=document.createElement('button');addBtn.type='button';addBtn.textContent='Hinzufügen';addBtn.className='primary';
+              const topicRow=document.createElement('div');topicRow.className='ac-wrap';topicRow.style.flex='1';topicRow.append(inp,addBtn);
+              const onPick=txt=>{
+                const t=txt.trim();if(!t)return;if(!range.topicsByDate[key].includes(t))range.topicsByDate[key].push(t);inp.value='';renderTopicsConfig();
+              };
+              attachAutocomplete(inp,onPick);
+              addBtn.addEventListener('click',()=>{const t=inp.value.trim();if(t)onPick(t);});
+              list.appendChild(topicRow);
+              const items=range.topicsByDate[key]||[];
+              if(!items.length){const msg=document.createElement('div');msg.className='muted small';msg.textContent='Noch keine Themen eingetragen.';list.appendChild(msg);}
+              else items.forEach((txt,idx)=>{const pill=document.createElement('span');pill.className='pill';pill.innerHTML=`<span>${escapeHtml(txt)}</span><span class="x" title="Entfernen">×</span>`;pill.querySelector('.x').addEventListener('click',()=>{range.topicsByDate[key].splice(idx,1);renderTopicsConfig();});list.appendChild(pill);});
+            }
+            card.append(head,body,list);wrap.appendChild(card);
+          });
+        }
+
+        /* --- Vorherige Pläne (UI) --- */
+        function updatePrevPlanUI(){
+          const infoEl=el('prevPlanInfo'),selectEl=el('prevPlanSelect'),btn=el('showPrevPlanBtn'),contentEl=el('prevPlanContent');
+          if(!infoEl||!selectEl||!btn||!contentEl)return;
+          selectEl.innerHTML='';
+          if(!planHistory.length){
+            infoEl.textContent='Noch keine Pläne gespeichert. Es werden bis zu 15 Pläne behalten.';
+            const opt=document.createElement('option');opt.value='';opt.textContent='Keine Pläne vorhanden';selectEl.appendChild(opt);
+            selectEl.disabled=true;btn.disabled=true;btn.textContent='Vorherigen Plan anzeigen';
+            contentEl.classList.add('hidden');contentEl.innerHTML='';
+            return;
+          }
+          selectEl.disabled=false;btn.disabled=false;
+          const sorted=[...planHistory].sort((a,b)=>(a.meta.createdAt||'').localeCompare(b.meta.createdAt||''));
+          const oldest=sorted[0],latest=sorted[sorted.length-1];
+          try{
+            const oS=fmtDe.format(parseISO(oldest.meta.range.start));
+            const oE=fmtDe.format(parseISO(oldest.meta.range.end));
+            const lS=fmtDe.format(parseISO(latest.meta.range.start));
+            const lE=fmtDe.format(parseISO(latest.meta.range.end));
+            infoEl.textContent=`Gespeicherte Pläne: ${sorted.length} (max 15). Ältester: ${oS} – ${oE}, neuester: ${lS} – ${lE}.`;
+          }catch{
+            infoEl.textContent=`Gespeicherte Pläne: ${sorted.length} (max 15).`;
+          }
+          sorted.forEach((entry,idx)=>{
+            const opt=document.createElement('option');opt.value=entry.id;
+            let label='';
+            try{
+              const s=fmtDe.format(parseISO(entry.meta.range.start));
+              const e=fmtDe.format(parseISO(entry.meta.range.end));
+              label=`${idx+1}. ${s} – ${e}`;
+            }catch{
+              label=`Plan ${idx+1}`;
+            }
+            opt.textContent=label;
+            selectEl.appendChild(opt);
+          });
+          selectEl.value=sorted[sorted.length-1].id;
+        }
+        function initStep4(){
+          el('back3').addEventListener('click',()=>{el('step4').classList.add('hidden');el('step3').classList.remove('hidden');});
+          el('genPlan').addEventListener('click',()=>{
+            if(!range.start||!range.end){el('errStep4').textContent='Zeitraum fehlt oder ist ungültig. Bitte Schritt 1 festlegen.';return}
+            if(!range.weekdays.length){el('errStep4').textContent='Bitte in Schritt 1 mindestens einen Wochentag auswählen.';return}
+            if(!range.roles.length){el('errStep4').textContent='Bitte in Schritt 1 mindestens eine Rolle anlegen oder per CSV importieren.';return}
+            el('errStep4').textContent='';
+            try{
+              generatePlan();
+              el('step4').classList.add('hidden');
+              el('result').classList.remove('hidden');
+              const h=document.querySelector('header');if(h)h.style.display='none';
+            }catch(e){
+              console.error(e);
+              el('errStep4').textContent='Beim Erstellen ist ein Fehler aufgetreten: '+(e?.message||String(e));
+            }
+          });
+          wireTopicsCsvImport();
+          const btnPrev=el('showPrevPlanBtn'),selectEl=el('prevPlanSelect'),contentEl=el('prevPlanContent');
+          if(btnPrev&&selectEl&&contentEl){
+            btnPrev.addEventListener('click',()=>{
+              const id=selectEl.value;
+              const entry=planHistory.find(p=>p.id===id);
+              if(!entry)return;
+              const isHidden=contentEl.classList.contains('hidden');
+              if(isHidden){
+                contentEl.innerHTML=entry.html;
+                contentEl.classList.remove('hidden');
+                btnPrev.textContent='Vorherigen Plan ausblenden';
+              }else{
+                contentEl.classList.add('hidden');
+                contentEl.innerHTML='';
+                btnPrev.textContent='Vorherigen Plan anzeigen';
+              }
+            });
+            selectEl.addEventListener('change',()=>{
+              const contentEl2=el('prevPlanContent');
+              if(contentEl2.classList.contains('hidden'))return;
+              const id=selectEl.value;
+              const entry=planHistory.find(p=>p.id===id);
+              if(!entry)return;
+              contentEl2.innerHTML=entry.html;
+            });
+          }
+          updatePrevPlanUI();
+        }
+
+        /* --- Faire Zuteilung & Historie --- */
+        function assignFair(eventDates){
+          currentPlan=[];
+          const roles=range.roles||[];
+          const totalCount=Object.fromEntries(persons.map(p=>[p.id,0]));
+          const monthlyCount={};
+          const roleCounts={};
+          roles.forEach(r=>roleCounts[r]=Object.fromEntries(persons.map(p=>[p.id,0])));
+          for(const dateISO of eventDates){
+            const key=normDate(dateISO);
+            const d=parseISO(key);
+            const wdIdx=d.getDay();
+            const wdName=wdFull(wdIdx);
+            const monthKey=`${d.getFullYear()}-${d.getMonth()+1}`;
+            if(!monthlyCount[monthKey])monthlyCount[monthKey]=Object.fromEntries(persons.map(p=>[p.id,0]));
+            const usedIds=new Set();
+            for(const role of roles){
+              let cands=persons.filter(p=>{
+                const a=avail[p.id]||{weekdays:new Set(),unavail:new Set(),roles:new Set()};
+                const canDay=!a.weekdays.size||a.weekdays.has(wdIdx);
+                const notBlocked=!a.unavail.has(key);
+                const roleAllowed=!a.roles.size||a.roles.has(role);
+                return canDay&&notBlocked&&roleAllowed&&!usedIds.has(p.id);
+              });
+              // Fairness-Sortierung: zuerst alle Parameter (Gesamt-/Monats-/Rollen-Zählung),
+              // anschließend Zufallsprinzip als Tie-Breaker bei identischen Werten.
+              cands.sort((a,b)=>{
+                const tA=totalCount[a.id]||0,tB=totalCount[b.id]||0;if(tA!==tB)return tA-tB;
+                const mA=monthlyCount[monthKey][a.id]||0,mB=monthlyCount[monthKey][b.id]||0;if(mA!==mB)return mA-mB;
+                const rA=roleCounts[role][a.id]||0,rB=roleCounts[role][b.id]||0;return rA-rB;
+              });
+              let pick=null,note='';
+              if(cands.length){
+                const first=cands[0];
+                const tFirst=totalCount[first.id]||0;
+                const mFirst=monthlyCount[monthKey][first.id]||0;
+                const rFirst=roleCounts[role][first.id]||0;
+                const tied=cands.filter(c=>{
+                  return (totalCount[c.id]||0)===tFirst &&
+                         (monthlyCount[monthKey][c.id]||0)===mFirst &&
+                         (roleCounts[role][c.id]||0)===rFirst;
+                });
+                const randomIndex=Math.floor(Math.random()*tied.length);
+                pick=tied[randomIndex];
+                usedIds.add(pick.id);
+                totalCount[pick.id]++;
+                monthlyCount[monthKey][pick.id]++;
+                roleCounts[role][pick.id]++;
+              }else{
+                note='OFFEN';
+              }
+              currentPlan.push({date:key,weekday:wdName,role,personId:pick?.id||null,personName:pick?.name||'',note});
+            }
+          }
+        }
+        function savePlanToHistory(){
+          try{
+            if(typeof localStorage==='undefined')return;
+            const container=el('resultCards');if(!container)return;
+            const html=container.innerHTML||'';if(!html.trim())return;
+            const entry={
+              id:uid(),
+              html,
+              meta:{
+                range:{start:range.start,end:range.end},
+                createdAt:new Date().toISOString(),
+                type:range.type||'',
+                weekdays:[...(range.weekdays||[])],
+                roles:[...(range.roles||[])],
+                profile: currentProfile
+              }
+            };
+            planHistory.push(entry);
+            if(planHistory.length>15){
+              planHistory=planHistory.slice(planHistory.length-15);
+            }
+            lsSet('planHistory',JSON.stringify(planHistory));
+          }catch(e){console.warn('Fehler beim Speichern der Plan-Historie:',e);}
+        }
+
+        /* --- Plan anzeigen --- */
+        function renderPlan(){
+          const container=el('resultCards');if(!container)return;
+          container.innerHTML='';const byDate={};
+          currentPlan.forEach(rec=>{const key=normDate(rec.date);(byDate[key]=byDate[key]||[]).push(rec);});
+          buildEventDatesAll().sort().forEach(key=>{
+            const d=parseISO(key);const wdIdx=d.getDay();const isCancelled=!!range.cancelled[key];const reason=range.cancelled[key]||'';
+            const card=document.createElement('div');card.className='dateCard'+(isCancelled?' cancelled':'');
+            const head=document.createElement('div');head.className='dateHead';head.innerHTML=`<div><strong>${fmtDe.format(d)}</strong></div><div class="muted">${wdFull(wdIdx)}</div>`;card.appendChild(head);
+            if(isCancelled){
+              const cancelRow=document.createElement('div');cancelRow.className='roleRow';
+              cancelRow.innerHTML=`<div class="role">Ausfall</div><div class="name">${escapeHtml(reason||'—')}</div><div class="hint"></div>`;card.appendChild(cancelRow);
+            }else{
+              const rows=byDate[key]||[];const topics=Array.isArray(range.topicsByDate[key])?range.topicsByDate[key]:[];
+              if(topics.length){
+                const topicsRow=document.createElement('div');topicsRow.className='roleRow topics';
+                topicsRow.innerHTML=`<div class="role">Themen</div><div class="name">${escapeHtml(topics.join(', '))}</div><div class="hint"></div>`;
+                card.appendChild(topicsRow);
+              }
+              rows.forEach(rec=>{
+                const rr=document.createElement('div');rr.className='roleRow roleAssign';
+                rr.innerHTML=`<div class="role">${escapeHtml(rec.role)}</div><div class="name">${escapeHtml(rec.personName||'—')}</div><div class="hint">${escapeHtml(rec.note||'')}</div>`;
+                card.appendChild(rr);
+              });
+            }
+            container.appendChild(card);
+          });
+        }
+        function generatePlan(){
+          const events=buildEventDates();
+          if(!events.length && !Object.keys(range.cancelled||{}).length)throw new Error('Keine Termine im Zeitraum (prüfe Schritt 1 und evtl. Ausfälle in Schritt 4).');
+          assignFair(events);
+          renderPlan();
+          savePlanToHistory();
+        }
+
+        /* --- Default-Woche --- */
+        (function setDefaultWeekRange(){
+          const d=new Date(),day=d.getDay(),diff=(day===0?-6:1-day);
+          const monday=new Date(d.getFullYear(),d.getMonth(),d.getDate()+diff);range.start=isoLocal(monday);range.end=isoLocal(nextDay(monday,6));
+        })();
+
+        /* --- LocalStorage laden (profil-spezifisch) --- */
+        function loadFromLocalStorageIfAvailable(){
+          try{
+            if(typeof localStorage==='undefined')return;
+
+            // Personen-CSV (profil-spezifisch, Migration von altem globalen Key)
+            let storedPersonsCsv=lsGet('personsCsvText');
+            if(!storedPersonsCsv){
+              const globalTxt=localStorage.getItem('ksp_personsCsvText');
+              if(globalTxt){
+                storedPersonsCsv=globalTxt;
+                lsSet('personsCsvText',globalTxt);
+                const globalHash=localStorage.getItem('ksp_personsCsvHash')||'';
+                lsSet('personsCsvHash',globalHash);
+              }
+            }
+            if(storedPersonsCsv){
+              csvNames=parseNamesFromText(String(storedPersonsCsv));renderCsvNamesList();
+              if(!persons.length && csvNames.length)addAllImportedNames();
+              const info=el('csvLocalInfo');if(info&&csvNames.length){const hash=lsGet('personsCsvHash')||'';info.textContent=`Gespeicherte Personen-CSV geladen (${csvNames.length} Namen, Hash: ${hash||'n/a'}).`;}
+            }
+
+            // Themen-CSV
+            let storedTopicsCsv=lsGet('topicsCsvText');
+            if(!storedTopicsCsv){
+              const globalTxtT=localStorage.getItem('ksp_topicsCsvText');
+              if(globalTxtT){
+                storedTopicsCsv=globalTxtT;
+                lsSet('topicsCsvText',globalTxtT);
+                const globalHashT=localStorage.getItem('ksp_topicsCsvHash')||'';
+                lsSet('topicsCsvHash',globalHashT);
+              }
+            }
+            if(storedTopicsCsv){
+              topicCatalog=parseTopicsFromText(String(storedTopicsCsv));
+              const infoT=el('topicsCsvInfo');if(infoT&&topicCatalog.length){const hashT=lsGet('topicsCsvHash')||'';infoT.textContent=`Gespeicherter Themen-Katalog geladen (${topicCatalog.length} Themen, Hash: ${hashT||'n/a'}). Schlagwortsuche aktiv (Teilwörter werden gefunden).`;}
+            }
+
+            // Rollen-CSV
+            let storedRolesCsv=lsGet('rolesCsvText');
+            if(!storedRolesCsv){
+              const globalTxtR=localStorage.getItem('ksp_rolesCsvText');
+              if(globalTxtR){
+                storedRolesCsv=globalTxtR;
+                lsSet('rolesCsvText',globalTxtR);
+                const globalHashR=localStorage.getItem('ksp_rolesCsvHash')||'';lsSet('rolesCsvHash',globalHashR);
+              }
+            }
+            if(storedRolesCsv){
+              rolesCatalog=parseRolesFromText(String(storedRolesCsv));
+              if(rolesCatalog.length){
+                rolesCatalog.forEach(r=>{const role=(r||'').trim();if(role&&!range.roles.includes(role))range.roles.push(role);});
+                renderRolesList();renderRolesImportedList();
+                const infoR=el('rolesCsvInfo');if(infoR){const hashR=lsGet('rolesCsvHash')||'';infoR.textContent=`Gespeicherte Rollen-CSV geladen (${rolesCatalog.length} Rollen, Hash: ${hashR||'n/a'}).`;}
+              }else renderRolesImportedList();
+            }
+
+            // Plan-Historie
+            let storedHistory=lsGet('planHistory');
+            if(!storedHistory){
+              const globalHistory=localStorage.getItem('ksp_planHistory');
+              if(globalHistory){
+                storedHistory=globalHistory;
+                lsSet('planHistory',globalHistory);
+              }
+            }
+            if(storedHistory){
+              try{
+                const parsed=JSON.parse(storedHistory);
+                if(Array.isArray(parsed)){
+                  // Nur Pläne dieses Profils anzeigen (falls global gespeichert)
+                  planHistory=parsed
+                    .filter(p=>!p.meta?.profile || p.meta.profile===currentProfile)
+                    .slice(-15);
+                }
+              }catch{planHistory=[];}
+            }
+          }catch(err){console.warn('Fehler beim Laden aus LocalStorage:',err);}
+        }
+
+        /* --- Profil-Auswahl beim Start (mit Löschen/Hinzufügen) --- */
+        function initProfileSelection(){
+          const overlay=document.getElementById('profileOverlay');
+          if(!overlay)return;
+          // Profile laden
+          loadProfilesFromStorage();
+          // Letztes aktives Profil optional merken (Overlay bleibt sichtbar, Auswahl erfolgt per Klick)
+          try{
+            if(typeof localStorage!=='undefined'){
+              const last=localStorage.getItem('ksp_currentProfileId');
+              if(last)currentProfile=last; // Wird erst aktiv, wenn der Nutzer ein Profil anklickt
+            }
+          }catch(e){
+            console.warn('Aktives Profil konnte nicht aus LocalStorage gelesen werden:',e);
+          }
+          const addBtn=el('addProfileBtn');
+          const nameInput=el('profileNameInput');
+          if(addBtn && nameInput){
+            addBtn.addEventListener('click',()=>{
+              if(profiles.length>=5)return;
+              let name=nameInput.value.trim();
+              if(!name){
+                name='Profil '+(profiles.length+1);
+              }
+              profiles.push({id:uid(),name});
+              nameInput.value='';
+              saveProfilesToStorage();
+              renderProfileList();
+            });
+            nameInput.addEventListener('keydown',e=>{
+              if(e.key==='Enter'){
+                e.preventDefault();
+                addBtn.click();
+              }
+            });
+          }
+          renderProfileList();
+
+          // Anzeige evtl. bereits gespeicherten Profils (falls gewünscht)
+          updateProfileDisplay();
+        }
+
+        /* --- Initialisierung --- */
+        initStep1();
+        initStep2();
+        initStep3();
+        initStep4();
+        initProfileSelection();
+
+        /* PNG-Export */
+        const pngBtn=el('exportPngBtn');
+        /* Neuer Button: Plan neu erstellen */
+        el("restartBtn").addEventListener("click", () => {
+          const h = document.querySelector("header");
+          if (h) h.style.display = "";
+          el("result").classList.add("hidden");
+          el("step1").classList.remove("hidden");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+        if(pngBtn && typeof html2canvas==='function'){
+          pngBtn.addEventListener('click',()=>{
+            const target=el('resultCards');if(!target)return;
+            html2canvas(target,{scale:2,backgroundColor:'#ffffff',windowWidth:document.documentElement.scrollWidth,windowHeight:document.documentElement.scrollHeight})
+              .then(canvas=>{const link=document.createElement('a');link.download='kinderstunden-plan.png';link.href=canvas.toDataURL('image/png');link.click();})
+              .catch(err=>{console.error('Fehler beim PNG-Export:',err);alert('Beim PNG-Export ist ein Fehler aufgetreten. Details in der Konsole.');});
+          });
+        }else{
+          console.warn('PNG-Export nicht verfügbar: html2canvas nicht geladen oder Button fehlt.');
+        }
+      });
+    </script>
+  </div>
+</body>
+</html>
